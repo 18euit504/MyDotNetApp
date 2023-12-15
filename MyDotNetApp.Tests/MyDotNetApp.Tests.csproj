@@ -1,0 +1,8 @@
+MyDotNetApp/
+|-- MyDotNetApp.csproj
+|-- MyDotNetApp/
+|   |-- Program.cs
+|
+|-- MyDotNetApp.Tests/
+    |-- MyDotNetApp.Tests.csproj
+    |-- MyTests.cs
