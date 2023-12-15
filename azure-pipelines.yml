@@ -1,0 +1,65 @@
+trigger:
+- main  # Update this branch according to your repository
+
+pool:
+  vmImage: 'windows-latest'
+
+jobs:
+- job: Build
+  displayName: 'Build and Test'
+  steps:
+  - task: UseDotNet@2
+    inputs:
+      packageType: 'sdk'
+      version: '3.x'
+
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'restore'
+      projects: '**/*.csproj'
+
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'build'
+      projects: '**/*.csproj'
+      arguments: '--configuration Release'
+
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'test'
+      projects: '**/*Tests.csproj'
+      arguments: '--configuration Release'
+
+- job: SonarCloud
+  displayName: 'Run SonarCloud analysis'
+  dependsOn: Build
+  condition: succeeded()
+  pool:
+    vmImage: 'windows-latest'
+  steps:
+  - task: UseDotNet@2
+    inputs:
+      packageType: 'sdk'
+      version: '3.x'
+
+  - task: SonarCloudPrepare@1
+    inputs:
+      SonarCloud: 'sonarcloud'
+      organization: 'sarathsasi0251'
+      scannerMode: 'MSBuild'
+      projectKey: 'SarathSasi0251_sonartest'
+      projectName: 'sonartest'
+      projectVersion: '$(Build.BuildId)'
+
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'build'
+      projects: '**/*.csproj'
+      arguments: '/d:sonar.coverage.exclusions="**/*Tests*"'  # Exclude test projects from coverage
+
+  - task: SonarCloudAnalyze@1
+
+  - task: SonarCloudPublish@1
+    inputs:
+      pollingTimeoutSec: '300'
+
